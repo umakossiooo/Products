@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Product = void 0;
-var Product = /** @class */ (function () {
-    function Product(id, title, description, price, discountPercentage, rating, stock, brand, category, thumbnail, images) {
+export class Product {
+    constructor(id, title, description, price, discountPercentage, rating, stock, brand, category, thumbnail, images) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -15,6 +12,4 @@ var Product = /** @class */ (function () {
         this.thumbnail = thumbnail;
         this.images = images;
     }
-    return Product;
-}());
-exports.Product = Product;
+}

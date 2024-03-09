@@ -171,15 +171,22 @@ declare global {
     }
 }
 
+declare global {
+    interface Window {
+        deleteProduct: (id: number) => void;
+    }
+}
+
 
 // Import statements
-import { Product } from './clases';
+import { Product } from './clases.js';
 import * as bootstrap from 'bootstrap';
 
 // DOM elements
 const tableBody: HTMLTableSectionElement | null = document.querySelector('#table-body');
 const myModal_edit: bootstrap.Modal = new bootstrap.Modal(document.getElementById('modalProduct')!);
 const myModal_create: bootstrap.Modal = new bootstrap.Modal(document.getElementById('modalNewProduct')!);
+
 
 
 // Constants and variables
@@ -213,10 +220,10 @@ const fetchProducts = (): void => {
             });
 
 
-            let myModal_edit: bootstrap.Modal | null;
+            // let myModal_edit: bootstrap.Modal | null;
 
             // Show modal function
-            window.showModal = (id: number): void => {
+            window.showModal = (id: number, viewOnly: boolean = false): void => {
                 idProductUpdate = id;
                 const index: number = products.findIndex((item) => item.id === idProductUpdate);
                 document.querySelector<HTMLInputElement>('#ProductModal')!.value = products[index].title;
@@ -226,16 +233,38 @@ const fetchProducts = (): void => {
                 document.querySelector<HTMLInputElement>('#RatingModal')!.value = products[index].rating.toString();
                 document.querySelector<HTMLInputElement>('#StockModal')!.value = products[index].stock.toString();
                 document.querySelector<HTMLInputElement>('#BrandModal')!.value = products[index].brand;
-                // const categoryId: string = products[index].category;
-                // const categorySelect: HTMLSelectElement = document.querySelector('#CategoryModal')!;
-                // for (let option of categorySelect.options) {
-                //     if (option.value === categoryId) {
-                //         option.selected = true;
-                //     }
-                // }
-                document.querySelector<HTMLInputElement>('#CategoryModal')!.value = products[index].category;
+                const categoryId: string = products[index].category;
+                const categorySelect: HTMLSelectElement = document.querySelector('#CategoryModal')!;
+                for (let option of categorySelect.options) {
+                    if (option.value === categoryId) {
+                        option.selected = true;
+                    }
+                }
+
                 document.querySelector<HTMLInputElement>('#ThumbnailModal')!.value = products[index].thumbnail;
                 document.querySelector<HTMLInputElement>('#ImagesModal')!.value = products[index].images;
+
+                const inputs: NodeListOf<HTMLInputElement> = document.querySelectorAll('#modalProduct input, #modalProduct select');
+                inputs.forEach(input => {
+                    input.disabled = viewOnly;
+                });
+
+                if (viewOnly) {
+                    document.getElementById('ThumbnailModal')!.style.display = 'none';
+                    document.getElementById('ImagesModal')!.style.display = 'none';
+                    document.getElementById('saveChangesBtn')!.style.display = 'none';
+
+                    const labels: NodeListOf<HTMLLabelElement>| null = document.querySelectorAll('#modalProduct label');
+                    if (labels){
+                        labels.forEach(label => {
+                            const htmlFor = label.htmlFor;
+                            if (htmlFor === 'ImagesModal' || htmlFor === 'ThumbnailModal') {
+                                label.style.display = viewOnly ? 'none' : 'block';
+                            }
+                        });
+                    }
+                }
+
                 if (myModal_edit) {
                     myModal_edit.show();
                 } else {
@@ -299,6 +328,22 @@ const fetchProducts = (): void => {
                 myModal_create.hide();
             };
 
+
+            window.deleteProduct = (id: number): void => {
+                const index: number = products.findIndex((item) => item.id === id);
+                const confirmDelete = confirm(`Are you sure you want to delete the product ${products[index].title}?`);
+
+                if (confirmDelete) {
+
+                    if (index !== -1) {
+                        products.splice(index, 1);
+                        loadTable(products);
+                    } else {
+                        console.error(`Product with ID ${id} not found.`);
+                    }
+                }
+            }
+
             // Event listeners
             document.getElementById('addProductBtn')!.addEventListener('click', addProduct);
             document.querySelector<HTMLFormElement>('#formModal')!.addEventListener('submit', productUpdate);
@@ -308,6 +353,7 @@ const fetchProducts = (): void => {
             console.error('Error fetching products:', error);
         });
 };
+
 
 // Load table function
 const loadTable = (products: Product[]): void => {
@@ -319,23 +365,23 @@ const loadTable = (products: Product[]): void => {
         productsToShow.forEach(item => {
             const row: HTMLTableRowElement = document.createElement('tr');
             const cells: string = `
-                <td>${item.id}</td>
-                <td>${item.title}</td>
-                <td><img src="${item.thumbnail}" alt="Thumbnail" style="max-width: 150px;"></td>
-                <td>${item.description}</td>
-                <td>$${item.price}</td>
-                <td>%${item.discountPercentage}</td>
-                <td>${item.rating}</td>
-                <td>${item.stock}</td>
-                <td>${item.brand}</td>
-                <td>${item.category}</td>
-                <td>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-dark"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                        <button class="btn btn-outline-warning" onclick="showModal(${item.id})"><i class="fa fa-pencil" aria-hidden="true"></i></button>
-                        <button class="btn btn-outline-danger" onclick="deleteProduct(${item.id})"><i class="fa fa-times" aria-hidden="true"></i></button>
-                    </div>
-                </td>`;
+                    <td>${item.id}</td>
+                    <td>${item.title}</td>
+                    <td><img src="${item.thumbnail}" alt="Thumbnail" style="max-width: 150px;"></td>
+                    <td>${item.description}</td>
+                    <td>$${item.price}</td>
+                    <td>%${item.discountPercentage}</td>
+                    <td>${item.rating}</td>
+                    <td>${item.stock}</td>
+                    <td>${item.brand}</td>
+                    <td>${item.category}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-dark" onclick="showModal(${item.id}, true)"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-warning" onclick="showModal(${item.id})"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-danger" onclick="deleteProduct(${item.id})"><i class="fa fa-times" aria-hidden="true"></i></button>
+                        </div>
+                    </td>`;
             row.innerHTML = cells;
             tableBody.appendChild(row);
         });
