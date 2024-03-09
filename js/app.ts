@@ -219,9 +219,6 @@ const fetchProducts = (): void => {
                 }
             });
 
-
-            // let myModal_edit: bootstrap.Modal | null;
-
             // Show modal function
             window.showModal = (id: number, viewOnly: boolean = false): void => {
                 idProductUpdate = id;
@@ -390,5 +387,4 @@ const loadTable = (products: Product[]): void => {
     }
 };
 
-// Call fetchProducts function
 fetchProducts();

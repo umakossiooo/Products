@@ -32,7 +32,6 @@ const fetchProducts = () => {
                 loadTable(products);
             }
         });
-        // let myModal_edit: bootstrap.Modal | null;
         // Show modal function
         window.showModal = (id, viewOnly = false) => {
             idProductUpdate = id;
@@ -189,5 +188,4 @@ const loadTable = (products) => {
         console.error("tableBody is null. Unable to update the table.");
     }
 };
-// Call fetchProducts function
 fetchProducts();
